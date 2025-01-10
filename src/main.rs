@@ -39,7 +39,14 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
                 // Fetch the word asynchronously
                 match get_word(trimmed).await {
-                    Ok(word) => println!("{:?}", word),
+                    Ok(word) => println!(
+                        "{:}",
+                        word.extract
+                            .split('\n')
+                            .map(|s| s.to_string())
+                            .collect::<Vec<String>>()
+                            .join("\n")
+                    ),
                     Err(e) => eprintln!("Error fetching word: {}", e),
                 }
             }

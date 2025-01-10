@@ -13,20 +13,18 @@ impl WiktionaryApi {
 
     pub async fn get_word(&self, word: &str) -> Result<Word, Box<dyn std::error::Error>> {
         let url = format!(
-            "https://en.wiktionary.org/w/api.php?action=query&prop=extracts&format=json&titles={}",
-            word
+            "https://en.wiktionary.org/w/api.php?action=query&titles={}&prop=revisions&rvprop=content&format=json", word
         );
 
         let client = Client::new();
         let response = client.get(&url).send().await?;
 
         let response: QueryResponse = response.json().await?;
-        println!("{:?}", response);
         let page = response.query.pages.values().next().unwrap();
 
         Ok(Word {
             word: page.title.clone(),
-            extract: page.extract.clone().unwrap_or_default(),
+            extract: page.revisions[0].content.clone(),
         })
     }
 }
@@ -44,5 +42,11 @@ struct Query {
 #[derive(Deserialize, Debug)]
 struct Page {
     title: String,
-    extract: Option<String>,
+    revisions: Vec<Revision>,
+}
+
+#[derive(Deserialize, Debug)]
+struct Revision {
+    #[serde(rename = "*")]
+    content: String,
 }
